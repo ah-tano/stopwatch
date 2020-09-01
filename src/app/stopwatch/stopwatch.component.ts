@@ -2,7 +2,7 @@ import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 import { EMPTY, fromEvent, merge, timer } from 'rxjs';
 import { buffer, debounceTime, filter, map, mapTo, scan, startWith, switchMap } from 'rxjs/operators';
 
-import {Action} from '../action.enum';
+import { Action } from '../action.enum';
 
 @Component({
   selector: 'app-stopwatch',
