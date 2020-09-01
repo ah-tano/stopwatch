@@ -1,6 +1,7 @@
 import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 import { EMPTY, fromEvent, merge, timer } from 'rxjs';
 import { buffer, debounceTime, filter, map, mapTo, scan, startWith, switchMap } from 'rxjs/operators';
+import {Action} from '../action.enum';
 
 @Component({
   selector: 'app-stopwatch',
@@ -23,27 +24,27 @@ export class StopwatchComponent implements AfterViewInit {
   }
 
   initStopwatch() {
-    const start = fromEvent(this.startBtnRef.nativeElement, 'click').pipe(mapTo('start'));
-    const waitBtnClick = fromEvent(this.waitBtnRef.nativeElement, 'click');
-    const wait = waitBtnClick.pipe(
-      buffer(waitBtnClick.pipe(debounceTime(300))),
+    const start$ = fromEvent(this.startBtnRef.nativeElement, 'click').pipe(mapTo(Action.START));
+    const waitBtnClick$ = fromEvent(this.waitBtnRef.nativeElement, 'click');
+    const wait$ = waitBtnClick$.pipe(
+      buffer(waitBtnClick$.pipe(debounceTime(300))),
       map(clickArray => clickArray.length),
       filter(amount => amount === 2),
-      mapTo('wait')
+      mapTo(Action.WAIT)
     );
-    const reset = fromEvent(this.resetBtnRef.nativeElement, 'click').pipe(mapTo('reset'));
-    const counter = timer(0, 1000);
+    const reset$ = fromEvent(this.resetBtnRef.nativeElement, 'click').pipe(mapTo(Action.RESET));
+    const counter$ = timer(0, 1000);
 
-    merge(wait, start, reset)
+    merge(wait$, start$, reset$)
       .pipe(
-        startWith('wait'),
+        startWith(Action.WAIT),
         switchMap(val => {
-          if (val === 'start') {
-            return counter;
-          } else if (val === 'wait') {
+          if (val === Action.START) {
+            return counter$;
+          } else if (val === Action.WAIT) {
             return EMPTY;
-          } else if (val === 'reset') {
-            return counter.pipe(startWith(-1));
+          } else if (val === Action.RESET) {
+            return counter$.pipe(startWith(-1));
           }
         }),
         scan((acc, n) => n === -1 ? 0 : acc + 1)
